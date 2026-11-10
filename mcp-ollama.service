@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2026 Peter Lemenkov <lemenkov@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+[Unit]
+Description=Ollama MCP Server
+Documentation=https://github.com/lemenkov/mcp-ollama
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+WorkingDirectory=/opt/mcp-servers/mcp-ollama
+EnvironmentFile=/etc/sysconfig/mcp-ollama
+Environment=PYTHONDONTWRITEBYTECODE=1
+LoadCredential=backends.json:/etc/sysconfig/mcp-ollama.json
+ExecStart=/opt/mcp-servers/mcp-ollama/venv/bin/mcp-ollama
+Restart=on-failure
+RestartSec=3s
+TimeoutStartSec=60s
+TimeoutStopSec=15s
+
+# Full security hardening.  The service needs no writable paths of its own:
+# configuration arrives as a systemd credential, and jobs live in memory.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+ReadOnlyPaths=/opt/mcp-servers/mcp-ollama
+
+# MCP overhead is small; inference happens in Ollama, not here.
+MemoryMax=512M
+TasksMax=64
+LimitNOFILE=4096
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mcp-ollama
+
+[Install]
+WantedBy=multi-user.target

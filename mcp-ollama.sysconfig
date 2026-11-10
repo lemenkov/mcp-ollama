@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Peter Lemenkov <lemenkov@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+#
+# Listener for the MCP HTTP server.  nginx proxies /mcp/ollama here.
+HOST=127.0.0.1
+PORT=8080
+OLLAMA_MCP_LOG_LEVEL=INFO
+
+# Keep the service fully local: no PyPI update checks and no startup banner.
+FASTMCP_CHECK_FOR_UPDATES=off
+FASTMCP_SHOW_SERVER_BANNER=false

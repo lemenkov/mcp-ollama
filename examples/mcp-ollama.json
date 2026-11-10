@@ -1,0 +1,25 @@
+{
+  "default_backend": "local",
+  "backends": {
+    "local": {
+      "base_url": "http://127.0.0.1:11434",
+      "default_model": "llama3.2:3b",
+      "timeout_seconds": 600,
+      "max_concurrency": 1,
+      "description": "Ollama on this machine"
+    },
+    "remote": {
+      "base_url": "https://ollama.example.com/ollama",
+      "username": "ollama",
+      "password": "change-me",
+      "default_model": "qwen3:4b",
+      "verify_tls": true,
+      "timeout_seconds": 600,
+      "max_concurrency": 1,
+      "description": "Remote Ollama behind nginx Basic auth"
+    }
+  },
+  "job_ttl_seconds": 3600,
+  "max_jobs": 100,
+  "result_max_chars": 20000
+}
