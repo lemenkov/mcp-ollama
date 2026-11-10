@@ -36,8 +36,9 @@ running.
 - **Streamable HTTP and stdio.** Run as a long-lived HTTP service or as a local stdio
   server.
 - **Systemd-friendly.** The included unit runs with `DynamicUser`, a read-only
-  filesystem, no capabilities, private devices, and the backend JSON passed as a
-  systemd credential rather than an environment variable.
+  filesystem apart from small state/runtime directories, no capabilities, private
+  devices, and the backend JSON passed as a systemd credential rather than an
+  environment variable.
 - **No telemetry.** The packaged service disables FastMCP update checks and the
   startup banner.
 
@@ -498,7 +499,7 @@ Manual equivalent:
 
 ```bash
 sudo install -d /opt/mcp-servers/mcp-ollama
-sudo cp -a mcp_ollama pyproject.toml README.md LICENSE NOTICE \
+sudo cp -a mcp_ollama pyproject.toml README.md LICENSE \
     /opt/mcp-servers/mcp-ollama/
 sudo python3 -m venv /opt/mcp-servers/mcp-ollama/venv
 sudo /opt/mcp-servers/mcp-ollama/venv/bin/pip install /opt/mcp-servers/mcp-ollama
@@ -511,15 +512,18 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now mcp-ollama.service
 ```
 
-The service is read-only apart from its private `/tmp`. Its configuration is
-delivered via `LoadCredential=backends.json:/etc/sysconfig/mcp-ollama.json`, so the
-JSON can stay root-only.
+The service is read-only apart from a small state directory
+(`/var/lib/mcp-ollama`), a runtime directory (`/run/mcp-ollama`), and its private
+`/tmp`. Its configuration is delivered via
+`LoadCredential=backends.json:/etc/sysconfig/mcp-ollama.json`, so the JSON can stay
+root-only.
 
 Useful checks:
 
 ```bash
 systemctl status mcp-ollama.service
 journalctl -u mcp-ollama.service -f
+# Use the PORT value from /etc/sysconfig/mcp-ollama:
 ss -ltn | grep 8815
 ```
 
@@ -541,6 +545,9 @@ location ^~ /mcp/ollama {
     proxy_pass http://127.0.0.1:8815;
 }
 ```
+
+The `proxy_pass` port must match `PORT` in `/etc/sysconfig/mcp-ollama`; the
+examples here use the code default, 8815.
 
 If authentication is not inherited, add:
 
@@ -610,7 +617,7 @@ mcp-ollama --config mcp-ollama.json
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache License 2.0. See [LICENSE](LICENSE).
 
 Copyright 2026 Peter Lemenkov.
 

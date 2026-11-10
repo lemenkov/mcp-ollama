@@ -10,9 +10,24 @@ Wants=network-online.target
 [Service]
 Type=simple
 DynamicUser=yes
+StateDirectory=mcp-ollama
+StateDirectoryMode=0750
+RuntimeDirectory=mcp-ollama
+RuntimeDirectoryMode=0700
 WorkingDirectory=/opt/mcp-servers/mcp-ollama
 EnvironmentFile=/etc/sysconfig/mcp-ollama
 Environment=PYTHONDONTWRITEBYTECODE=1
+
+# FastMCP uses platformdirs for its data directory, so it needs an absolute
+# HOME and XDG roots.  StateDirectory/RuntimeDirectory make them writable
+# without opening up the rest of the filesystem.
+Environment="HOME=/var/lib/mcp-ollama"
+Environment="XDG_DATA_HOME=/var/lib/mcp-ollama/.local/share"
+Environment="XDG_CACHE_HOME=/var/lib/mcp-ollama/.cache"
+Environment="XDG_CONFIG_HOME=/var/lib/mcp-ollama/.config"
+Environment="XDG_STATE_HOME=/var/lib/mcp-ollama/.local/state"
+Environment="XDG_RUNTIME_DIR=/run/mcp-ollama"
+
 LoadCredential=backends.json:/etc/sysconfig/mcp-ollama.json
 ExecStart=/opt/mcp-servers/mcp-ollama/venv/bin/mcp-ollama
 Restart=on-failure
@@ -20,8 +35,8 @@ RestartSec=3s
 TimeoutStartSec=60s
 TimeoutStopSec=15s
 
-# Full security hardening.  The service needs no writable paths of its own:
-# configuration arrives as a systemd credential, and jobs live in memory.
+# Full security hardening.  The only writable paths are the small state and
+# runtime directories above; configuration arrives as a systemd credential.
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
